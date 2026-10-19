@@ -1,77 +1,190 @@
-# Aluno 1 - Diego
-
+# Dados da empresa
 empresa = {
     "nome": "Estoque Fácil",
     "cnpj": "12.345.678/0001-00",
     "cidade": "São Paulo",
-    "quantidade": "Equipe de Estoque"
+    "equipe": "Equipe de Estoque",
 }
 
 produtos = [
-    {
-        "codigo": 1,
-        "nome": "Teclado",
-        "categoria":'Periféricos'
-        "quantidade": 10
-    },
-    {
-        "codigo": 2,
-        "nome": "Mouse",
-        "categoria": "Periféricos",
-        "quantidade":15
-    },
-    {
-        "codigo": 3,
-        "nome": "Moinitor",
-        "categoria": "Eletrônicas",
-        "quantidade": 5
-    },
-    {
-        "codigo": 4,
-        "nome": "Notebook",
-        "categoria": "Computadores",
-        "quantidade": 8
-    }
+    {"codigo": 1, "nome": "Teclado", "categoria": "Periféricos", "quantidade": 10},
+    {"codigo": 2, "nome": "Mouse", "categoria": "Periféricos", "quantidade": 15},
+    {"codigo": 3, "nome": "Monitor", "categoria": "Eletrônicos", "quantidade": 5},
+    {"codigo": 4, "nome": "Notebook", "categoria": "Computadores", "quantidade": 8},
 ]
 
-# Aluno 2: Lucca Coelho da Silva
-# Matriz 2D de estado do estoque
+matriz_estoque = []
 
-matriz_estoque = [
-    ["Teclado", 20, "Estoque normal"],
-    ["Mouse", 15, "Estoque normal"],
-    ["Monitor", 5, "Estoque baixo"],
-    ["Noteook", 8, "Estoque normal"]
-]
 
-def mostrar_matriz():
-    print("\n=== MATRIZ 2D DO ESTOQUE ===")
+def mostrar_empresa():
+    print("\n=== DADOS DA EMPRESA ===")
+    for campo, valor in empresa.items():
+        print(f"{campo.capitalize()}: {valor}")
 
-    print(f"{'Produto':<15}
-    {'Quantidade':<12}
-    {'Estado':<20}")
-    print("-" * 50)
 
-    for linha in matriz_estoque:
-        print(f"{linha[0]:<15}
-        {linha[1]:<12} {linha[2]:<20}")
+def mostrar_produtos():
+    print("\n=== PRODUTOS ===")
+    if not produtos:
+        print("Nenhum produto cadastrado.")
+        return
+
+    for produto in produtos:
+        print(
+            f"Código: {produto['codigo']} | {produto['nome']} | "
+            f"Categoria: {produto['categoria']} | "
+            f"Quantidade: {produto['quantidade']}"
+        )
+
+
+def ler_inteiro(mensagem, minimo=0):
+    while True:
+        try:
+            valor = int(input(mensagem))
+            if valor < minimo:
+                print(f"Digite um número maior ou igual a {minimo}.")
+                continue
+            return valor
+        except ValueError:
+            print("Entrada inválida. Digite um número inteiro.")
+
+
+def localizar_produto():
+    codigo = ler_inteiro("Digite o código do produto: ", minimo=1)
+    for produto in produtos:
+        if produto["codigo"] == codigo:
+            return produto
+    print("Produto não encontrado.")
+    return None
+
+
+def buscar_produto():
+    produto = localizar_produto()
+    if produto:
+        print(
+            f"Código: {produto['codigo']} | {produto['nome']} | "
+            f"Categoria: {produto['categoria']} | "
+            f"Quantidade: {produto['quantidade']}"
+        )
+
+
+def adicionar_produto():
+    nome = input("Nome do produto: ").strip()
+    if not nome:
+        print("O nome do produto não pode ficar vazio.")
+        return
+
+    categoria = input("Categoria: ").strip()
+    if not categoria:
+        print("A categoria não pode ficar vazia.")
+        return
+
+    quantidade = ler_inteiro("Quantidade inicial: ")
+    codigo = max((produto["codigo"] for produto in produtos), default=0) + 1
+    produtos.append(
+        {
+            "codigo": codigo,
+            "nome": nome,
+            "categoria": categoria,
+            "quantidade": quantidade,
+        }
+    )
+    print(f"Produto cadastrado com o código {codigo}.")
+
+
+def entrada_estoque():
+    produto = localizar_produto()
+    if produto:
+        quantidade = ler_inteiro("Quantidade de entrada: ", minimo=1)
+        produto["quantidade"] += quantidade
+        print(f"Estoque atualizado: {produto['quantidade']} unidades.")
+
+
+def saida_estoque():
+    produto = localizar_produto()
+    if not produto:
+        return
+
+    quantidade = ler_inteiro("Quantidade de saída: ", minimo=1)
+    if quantidade > produto["quantidade"]:
+        print("Saída não realizada: quantidade maior que o estoque disponível.")
+        return
+
+    produto["quantidade"] -= quantidade
+    print(f"Estoque atualizado: {produto['quantidade']} unidades.")
+
 
 def atualizar_matriz():
     matriz_estoque.clear()
-
     for produto in produtos:
-    
-    quantidade = produto ["quantidade"]
+        quantidade = produto["quantidade"]
+        if quantidade == 0:
+            estado = "Sem estoque"
+        elif quantidade <= 5:
+            estado = "Estoque baixo"
+        else:
+            estado = "Estoque normal"
+        matriz_estoque.append([produto["nome"], quantidade, estado])
 
-    if quantidade == 0:
-        estado = "sem estoque"
-    elif quantidade <= 5:
-        estado = "Estoque baixo"
-    else
-        estado = "Estoque normal"
 
-    matriz_estoque.append([
-        produto["nome"],
-        quantidade,
-        estado
-    ])
+def mostrar_matriz():
+    atualizar_matriz()
+    print("\n=== MATRIZ 2D DO ESTOQUE ===")
+    print(f"{'Produto':<15}{'Quantidade':<12}{'Estado':<20}")
+    print("-" * 47)
+    for nome, quantidade, estado in matriz_estoque:
+        print(f"{nome:<15}{quantidade:<12}{estado:<20}")
+
+
+def verificar_estoque_baixo():
+    baixos = [produto for produto in produtos if produto["quantidade"] <= 5]
+    print("\n=== ESTOQUE BAIXO ===")
+    if not baixos:
+        print("Nenhum produto com estoque baixo.")
+        return
+
+    for produto in baixos:
+        estado = "Sem estoque" if produto["quantidade"] == 0 else "Estoque baixo"
+        print(f"{produto['nome']}: {produto['quantidade']} unidades ({estado})")
+
+
+def menu():
+    while True:
+        print("\n" + "=" * 50)
+        print("       CONTROLE DE ESTOQUE - ESTOQUE FÁCIL")
+        print("=" * 50)
+        print("1 - Mostrar dados da empresa")
+        print("2 - Mostrar produtos")
+        print("3 - Mostrar matriz 2D do estoque")
+        print("4 - Buscar produto")
+        print("5 - Adicionar produto")
+        print("6 - Entrada de estoque")
+        print("7 - Saída de estoque")
+        print("8 - Verificar estoque baixo")
+        print("0 - Sair")
+
+        opcao = input("Escolha uma opção: ").strip()
+        if opcao == "1":
+            mostrar_empresa()
+        elif opcao == "2":
+            mostrar_produtos()
+        elif opcao == "3":
+            mostrar_matriz()
+        elif opcao == "4":
+            buscar_produto()
+        elif opcao == "5":
+            adicionar_produto()
+        elif opcao == "6":
+            entrada_estoque()
+        elif opcao == "7":
+            saida_estoque()
+        elif opcao == "8":
+            verificar_estoque_baixo()
+        elif opcao == "0":
+            print("\nSistema encerrado. Obrigado por utilizar o Estoque Fácil!")
+            break
+        else:
+            print("Opção inválida. Digite uma opção entre 0 e 8.")
+
+
+if __name__ == "__main__":
+    menu()
