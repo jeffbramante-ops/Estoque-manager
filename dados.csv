@@ -1,8 +1,8 @@
 dados=[
   ["Empresa", "Produto",
 "Quantidade", "Custo_Unitario"],
-  ["Estoque Facilacil", "Teclado", "20", "80.50"],
-  ["Estoque Facil", "Mouse", "15", "45.00"],
-  ["Estoque Facil", "Monitor", "5", "750.00"],
-  ["Estoque Facil", "Notebook", "8", "3200.00"]
+  ["Estoque Facil", "Teclado", "20", "80.50", "Codigo [1]"],
+  ["Estoque Facil", "Mouse", "15", "45.00", "Codigo [2]"],
+  ["Estoque Facil", "Monitor", "5", "750.00", "Codigo [3]"],
+  ["Estoque Facil", "Notebook", "8", "3200.00", "Codigo [4]"]
   ]

@@ -1,4 +1,12 @@
-# Dados da empresa
+import ast
+import csv
+import re
+from pathlib import Path
+
+
+BASE_DIR = Path(__file__).resolve().parent
+ARQUIVO_DADOS = BASE_DIR / "dados.csv"
+
 empresa = {
     "nome": "Estoque Fácil",
     "cnpj": "12.345.678/0001-00",
@@ -6,14 +14,80 @@ empresa = {
     "equipe": "Equipe de Estoque",
 }
 
-produtos = [
-    {"codigo": 1, "nome": "Teclado", "categoria": "Periféricos", "quantidade": 10},
-    {"codigo": 2, "nome": "Mouse", "categoria": "Periféricos", "quantidade": 15},
-    {"codigo": 3, "nome": "Monitor", "categoria": "Eletrônicos", "quantidade": 5},
-    {"codigo": 4, "nome": "Notebook", "categoria": "Computadores", "quantidade": 8},
-]
-
+produtos = []
 matriz_estoque = []
+
+
+def carregar_dados():
+    global empresa
+
+    empresa_default = {
+        "nome": "Estoque Fácil",
+        "cnpj": "12.345.678/0001-00",
+        "cidade": "São Paulo",
+        "equipe": "Equipe de Estoque",
+    }
+    empresa.update(empresa_default)
+    produtos.clear()
+
+    if not ARQUIVO_DADOS.exists():
+        return
+
+    try:
+        conteudo = ARQUIVO_DADOS.read_text(encoding="utf-8").strip()
+        if not conteudo:
+            return
+
+        dados = None
+        if "dados=" in conteudo:
+            dados = ast.literal_eval(conteudo.split("=", 1)[1].strip())
+        else:
+            with ARQUIVO_DADOS.open("r", encoding="utf-8", newline="") as arquivo:
+                dados = [linha for linha in csv.reader(arquivo) if linha and any(item.strip() for item in linha)]
+
+        if not isinstance(dados, list):
+            return
+
+        linhas = [linha for linha in dados if isinstance(linha, list) and any(str(item).strip() for item in linha)]
+        if not linhas:
+            return
+
+        empresa["nome"] = str(linhas[1][0]).strip() if len(linhas) > 1 and linhas[1] else empresa["nome"]
+
+        for indice, linha in enumerate(linhas[1:], start=1):
+            if len(linha) < 3:
+                continue
+
+            nome_produto = str(linha[1]).strip()
+            quantidade = str(linha[2]).strip()
+            if not nome_produto:
+                continue
+
+            codigo = indice
+            if len(linha) > 4:
+                codigo_match = re.search(r"\d+", str(linha[4]).strip())
+                if codigo_match:
+                    codigo = int(codigo_match.group())
+
+            try:
+                qtd = int(quantidade)
+            except ValueError:
+                qtd = 0
+
+            produtos.append(
+                {
+                    "codigo": codigo,
+                    "nome": nome_produto,
+                    "categoria": "Geral",
+                    "quantidade": qtd,
+                }
+            )
+    except (SyntaxError, ValueError, TypeError, OSError):
+        empresa.update(empresa_default)
+        produtos.clear()
+
+
+carregar_dados()
 
 
 def mostrar_empresa():
@@ -41,6 +115,7 @@ def ler_inteiro(mensagem, minimo=0):
         try:
             valor = int(input(mensagem))
             if valor < minimo:
+
                 print(f"Digite um número maior ou igual a {minimo}.")
                 continue
             return valor
